@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import widgets as wid
 import numpy as np
 import matplotlib.gridspec as gridspec
-from menu import Menu,MenuItem,ItemProperties
+from menu import Menu, MenuItem, ItemProperties
 # from matplotlib.animation import FuncAnimation as mata
 # import drawImage as drim
 # from PIL import Image as ima
@@ -45,7 +45,7 @@ y2 = []
 while True:
     if(r2[1] < -height):
         break
-    print('%10.4f'*3 % (t, r2[0], r2[1]))
+    # print('%10.4f'*3 % (t, r2[0], r2[1]))
     x2.append(r2[0])
     y2.append(r2[1]+100)
     a2 = np.array([0., g])-air_c*v2
@@ -61,13 +61,43 @@ def submit(event):
     rho = 1.2922
     Cd = 0.5
     g = -9.8
-    degree = 60.0
+    degree = 0.000
     A = np.pi*r**2
     air_c = 0.5*Cd*rho*A/m
     TB_speV = 60. if (TB_spe.text == "") else float(TB_spe.text)
     v0 = float(TB_speV)
     TB_heiV = 0. if (TB_hei.text == "") else float(TB_hei.text)
-    theta = np.radians(degree)
+    axmax = 0.0
+    admax = 0.0
+    while(degree < 90.1):
+        theta = np.radians(degree)
+        vx0 = v0*np.cos(theta)
+        vy0 = v0*np.sin(theta)
+        r2 = np.array([0., 0.])
+        v2 = np.array([vx0, vy0])
+        a2 = np.array([0., g])-air_c*v2
+        t, dt = 0., 0.01
+        x2 = []
+        y2 = []
+
+        while True:
+            if(r2[1] < -TB_heiV):
+                break
+            # print('%10.4f'*3 % (t, r2[0], r2[1]))
+            x2.append(r2[0])
+            y2.append(r2[1]+TB_heiV)
+            a2 = np.array([0., g])-air_c*v2
+            v2 += a2*dt
+            r2 += v2*dt
+            t += dt
+
+        # line.set_xdata(x2)
+        # line.set_ydata(y2)
+        if(float(x2[-1]) > axmax):
+            axmax = x2[-1]
+            admax = degree
+        degree += 0.1
+    theta = np.radians(admax)
     vx0 = v0*np.cos(theta)
     vy0 = v0*np.sin(theta)
     r2 = np.array([0., 0.])
@@ -80,7 +110,7 @@ def submit(event):
     while True:
         if(r2[1] < -TB_heiV):
             break
-        print('%10.4f'*3 % (t, r2[0], r2[1]))
+        # print('%10.4f'*3 % (t, r2[0], r2[1]))
         x2.append(r2[0])
         y2.append(r2[1]+TB_heiV)
         a2 = np.array([0., g])-air_c*v2
@@ -89,6 +119,10 @@ def submit(event):
         t += dt
     line.set_xdata(x2)
     line.set_ydata(y2)
+    # if(x2[-1]>axmax):
+    #     axmax = x2
+    #     admax = degree
+    # degree+=0.00001
     ax.relim()
     ax.autoscale_view()
     plt.draw()
