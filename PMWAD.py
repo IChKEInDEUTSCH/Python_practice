@@ -69,34 +69,6 @@ def submit(event):
     TB_heiV = 0. if (TB_hei.text == "") else float(TB_hei.text)
     axmax = 0.0
     admax = 0.0
-    while(degree < 90.1):
-        theta = np.radians(degree)
-        vx0 = v0*np.cos(theta)
-        vy0 = v0*np.sin(theta)
-        r2 = np.array([0., 0.])
-        v2 = np.array([vx0, vy0])
-        a2 = np.array([0., g])-air_c*v2
-        t, dt = 0., 0.01
-        x2 = []
-        y2 = []
-
-        while True:
-            if(r2[1] < -TB_heiV):
-                break
-            # print('%10.4f'*3 % (t, r2[0], r2[1]))
-            x2.append(r2[0])
-            y2.append(r2[1]+TB_heiV)
-            a2 = np.array([0., g])-air_c*v2
-            v2 += a2*dt
-            r2 += v2*dt
-            t += dt
-
-        # line.set_xdata(x2)
-        # line.set_ydata(y2)
-        if(float(x2[-1]) > axmax):
-            axmax = x2[-1]
-            admax = degree
-        degree += 0.1
     theta = np.radians(admax)
     vx0 = v0*np.cos(theta)
     vy0 = v0*np.sin(theta)
@@ -106,7 +78,6 @@ def submit(event):
     t, dt = 0., 0.01
     x2 = []
     y2 = []
-
     while True:
         if(r2[1] < -TB_heiV):
             break
