@@ -62,7 +62,7 @@ class Ball:
     def preciseAngle(self, lowest, highest, count):
         mid = (lowest+highest)/2
         midD = self.distanceWithAir(mid, 0.001)
-        if count > 11:
+        if count > 20:
             return np.array([mid, midD])
         Nextmid = mid + 0.001
         NextmidD = self.distanceWithAir(Nextmid, 0.001)
