@@ -1,51 +1,72 @@
 import numpy as np
 
 
-class FRG:
-
+class Ball:
     def __init__(self, speed, height):
         self.speed = speed
         self.height = height
+        self.m = 1
+        self.r = 0.2
+        self.rho = 1.2
+        self.Cd = 0.5
+        self.A = np.pi * self.r ** 2
+        self.air_c = 0.5*self.Cd*self.rho*self.A/self.m
 
-    def air_c():
-        m = 0.1
-        r = 0.2
-        rho = 1.2
-        Cd = 0.5
-        A = np.pi*r**2
-        DeltaAC = 0.5*Cd*rho*A/m
-        return DeltaAC
+    def distanceWithAir(self, degree, dTime=0.01):
+        G = 9.8
+        x = 0
+        y = self.height
+        vx = np.cos(degree * np.pi / 180) * self.speed
+        vy = np.sin(degree * np.pi / 180) * self.speed
+        while (y >= 0):  # 計算投擲距離
+            cx = -vx * (self.air_c / self.m)
+            cy = -vy * (self.air_c / self.m) - G
+            vx = vx + cx * dTime
+            vy = vy + cy * dTime
+            dx = (vx * dTime)
+            dy = (vy * dTime) - (0.5 * G * pow(dTime, 2))
+            x += dx
+            y += dy
+        ny = y + dy
+        yPercent = ny / vy
+        x -= vx * yPercent
+        return x
 
-    def getRange(self,angleR,dt):
-        theta = np.radians(angleR)
-        vx0 = self.speed*np.cos(theta)
-        vy0 = self.speed*np.sin(theta)
-        r2 = np.array([0., 0.])
-        v2 = np.array([vx0, vy0])
-        a2 = np.array([0., 9.8])-FRG.air_c*v2
-        t=0.
+    def distanceWithDeg(self, degree, dTime=0.01):
+        G = 9.8
+        x = 0
+        y = self.height
         x2 = []
         y2 = []
-        while True:
-            if(r2[1] < -self.height):
-                break
-            # print('%10.4f'*3 % (t, r2[0], r2[1]))
-            x2.append(r2[0])
-            y2.append(r2[1]+self.height)
-            a2 = np.array([0., 9.8])-FRG.air_c*v2
-            v2 += a2*dt
-            r2 += v2*dt
-            t += dt
-        return np.array([x2, y2])
+        theta = np.radians(degree)
+        vx = np.cos(theta) * self.speed
+        vy = np.sin(theta) * self.speed
+        while (y >= 0):  # 計算投擲距離
+            cx = -vx * (self.air_c / self.m)
+            cy = -vy * (self.air_c / self.m) - G
+            vx = vx + cx * dTime
+            vy = vy + cy * dTime
+            dx = (vx * dTime)
+            dy = (vy * dTime) - (0.5 * G * pow(dTime, 2))
+            x += dx
+            y += dy
+            x2.append(x)
+            y2.append(y)
+        ny = y + dy
+        yPercent = ny / vy
+        x -= vx * yPercent
+        x2[-1] = x
+        r2 = np.array([x2, y2])
+        return r2
 
-    def AccurateAngle(self,begin,end,count):
-        mid = lazyGR((begin+end)/2)
-        if(count>20):
-            return mid
-        nextMid = lazyGR(mid.deg+0.01)
-        if (nextMid.distance>mid.distance): FRG.AccurateAngle(nextMid.deg,end,count+1)
-        else: FRG.AccurateAngle(begin,mid.deg,count+1)
-class lazyGR:
-    def __init__(self,deg):
-        self.deg = deg
-        self.distance = FRG.getRange(deg,0.01)[0][-1]
+    def preciseAngle(self, lowest, highest, count):
+        mid = (lowest+highest)/2
+        midD = self.distanceWithAir(mid, 0.001)
+        if count > 11:
+            return np.array([mid, midD])
+        Nextmid = mid + 0.001
+        NextmidD = self.distanceWithAir(Nextmid, 0.001)
+        if NextmidD > midD:
+            return self.preciseAngle(Nextmid, highest, count+1)
+        else:
+            return self.preciseAngle(lowest, mid, count+1)
